@@ -5,7 +5,7 @@ import { store } from './app/store';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
-import { createStor } from 'redux';
+import { legacy_createStore as createStore } from 'redux';
 
 const container = document.getElementById('root');
 const root = createRoot(container);
@@ -23,11 +23,11 @@ function reducer(state = num, action) {
   return state
 }
 
-let store = createStor(reducer)
+let contain = createStore(reducer)
 
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
+    <Provider store={contain}>
       <App />
     </Provider>
   </React.StrictMode>
