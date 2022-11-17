@@ -43,7 +43,7 @@ function App() {
   return (
     <div className="App">
       <p>test {num}</p>
-      <GlobalStyle></GlobalStyle>
+      <GlobalStyle />
       <MiusButton onClick={() => { dispatch({ type: "increase" }) }}>더하기</MiusButton>
       <PlusButton onClick={() => { dispatch({ type: "decrease" }) }}>빼기</PlusButton>
       <br></br>
