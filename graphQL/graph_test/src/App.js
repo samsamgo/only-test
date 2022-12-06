@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Discussions, Category, Footer, Header, Loading } from './Components';
-import getRepository from './getRepository';
+import getRepository from './getRepository.js';
 
 function App() {
   const [discussionObject, setDiscussionsObj] = useState({});

@@ -1,8 +1,6 @@
 import { graphql } from '@octokit/graphql';
 const { REACT_APP_GITHUB_AGORA_STATES_TOKEN, NODE_ENV } = process.env;
 
-import { graphql } from '@octokit/graphql';
-const { REACT_APP_GITHUB_AGORA_STATES_TOKEN, NODE_ENV } = process.env;
 
 async function getRepository() {
     let token;
