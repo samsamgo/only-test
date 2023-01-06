@@ -6,7 +6,13 @@ import axios from "axios";
 function App() {
   useEffect(() => {
     axios
-      .get("http://localhost:4000/test")
+      .get("http://localhost:4000/test", {
+        data: {
+          post_id: 1,
+          comment_id: 13,
+          username: "foo",
+        },
+      })
       .then(function (response) {
         // response
         console.log(response.data); //데이터 전송 성공시
