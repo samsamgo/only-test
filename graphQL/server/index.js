@@ -1,64 +1,40 @@
-const express = require("express");
-const { ApolloServer, gql } = require("apollo-server-express");
+const mongoose = require("mongoose");
 
-const port = process.env.PORT || 4000;
+module.exports = {
+  connect: (DB_HOST) => {
+    // Set strictQuery to false to prevent deprecation warning
+    mongoose.set("strictQuery", false);
 
-let notes = [
-  { id: "1", content: "this is a note", author: "Adam Scott" },
-  { id: "2", content: "this is author note", author: "Harlow Everly" },
-  { id: "3", content: "Oh hey look, another note!", author: "Riley Harrison" },
-];
+    // Use new server discovery and monitoring engine
+    mongoose.set("useUnifiedTopology", true);
 
-const typeDefs = gql`
-  type Note {
-    id: ID!
-    content: String!
-    author: String!
-  }
+    // Use new URL string parser
+    mongoose.set("useNewUrlParser", true);
 
-  type Query {
-    hello: String!
-    notes: [Note!]!
-    note(id: ID!): Note!
-  }
+    // Use findOneAndUpdate() instead of findAndModify()
+    mongoose.set("useFindAndModify", false);
 
-  type Mutation {
-    newNote(content: String!): Note!
-  }
-`;
+    // Use createIndex() instead of ensureIndex()
+    mongoose.set("useCreateIndex", true);
 
-const resolvers = {
-  Query: {
-    hello: () => "Hello world!",
-    notes: () => notes,
-    note: (parent, args) => {
-      return notes.find((note) => note.id === args.id);
-    },
+    // Connect to MongoDB
+    mongoose.connect(DB_HOST, {
+      useNewUrlParser: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+    });
+
+    // Log an error if the connection fails
+    mongoose.connection.on("error", (err) => {
+      console.error(err);
+      console.log(
+        "MongoDB connection error, please make sure MongoDB is running"
+      );
+      process.exit();
+    });
   },
-  Mutation: {
-    newNote: (parent, args) => {
-      let noteValue = {
-        id: String(notes.length + 1),
-        content: args.content,
-        author: "Adam Scott",
-      };
-      notes.push(noteValue);
-      return noteValue;
-    },
+  close: () => {
+    mongoose.connection.close();
   },
 };
-
-const app = express();
-
-const server = new ApolloServer({ typeDefs, resolvers });
-
-async function start() {
-  await server.start();
-  server.applyMiddleware({ app });
-  app.listen({ port }, () =>
-    console.log(
-      `GraphQL Server ready at http://localhost:${port}${server.graphqlPath}`
-    )
-  );
-}
-start();
