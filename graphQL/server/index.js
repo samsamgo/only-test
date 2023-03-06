@@ -1,40 +1,74 @@
-const mongoose = require("mongoose");
+const express = require("express");
+const { ApolloServer, gql } = require("apollo-server-express");
+require("dotenv").config();
 
-module.exports = {
-  connect: (DB_HOST) => {
-    // Set strictQuery to false to prevent deprecation warning
-    mongoose.set("strictQuery", false);
+const db = require("./db");
+const models = require("./moduls");
+//.env 파일에 명시된 포트 또는 포트 4000에서 서버를 실행
+const port = process.env.PORT || 4000;
+//DB_HOST값을 변수로 저장
+const DB_HOST = process.env.DB_HOST;
 
-    // Use new server discovery and monitoring engine
-    mongoose.set("useUnifiedTopology", true);
+let notes = [
+  { id: "1", content: "this is a note", author: "Adam Scott" },
+  { id: "2", content: "this is author note", author: "Harlow Everly" },
+  { id: "3", content: "Oh hey look, another note!", author: "Riley Harrison" },
+];
 
-    // Use new URL string parser
-    mongoose.set("useNewUrlParser", true);
+//그래프QL 스키마 언어로 스키마를 구성
+const typeDefs = gql`
+  type Note {
+    id: ID!
+    content: String!
+    author: String!
+  }
 
-    // Use findOneAndUpdate() instead of findAndModify()
-    mongoose.set("useFindAndModify", false);
+  type Query {
+    hello: String!
+    notes: [Note!]!
+    note(id: ID!): Note!
+  }
 
-    // Use createIndex() instead of ensureIndex()
-    mongoose.set("useCreateIndex", true);
+  type Mutation {
+    newNote(content: String!): Note!
+  }
+`;
 
-    // Connect to MongoDB
-    mongoose.connect(DB_HOST, {
-      useNewUrlParser: true,
-      useFindAndModify: false,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-    });
-
-    // Log an error if the connection fails
-    mongoose.connection.on("error", (err) => {
-      console.error(err);
-      console.log(
-        "MongoDB connection error, please make sure MongoDB is running"
-      );
-      process.exit();
-    });
+//스키마 필드를 위한 리졸버 함수 제공
+const resolvers = {
+  Query: {
+    hello: () => "Hello world!",
+    notes: () => notes,
+    note: async () => {
+      return await models.Note.find();
+    },
   },
-  close: () => {
-    mongoose.connection.close();
+  Mutation: {
+    newNote: (parent, args) => {
+      let noteValue = {
+        id: String(notes.length + 1),
+        content: args.content,
+        author: "Adam Scott",
+      };
+      notes.push(noteValue);
+      return noteValue;
+    },
   },
 };
+
+const app = express();
+//DB에 연결
+db.connect(DB_HOST);
+//apolloserver에 연결
+const server = new ApolloServer({ typeDefs, resolvers });
+
+async function start() {
+  await server.start();
+  server.applyMiddleware({ app });
+  app.listen({ port }, () =>
+    console.log(
+      `GraphQL Server ready at http://localhost:${port}${server.graphqlPath}`
+    )
+  );
+}
+start();
